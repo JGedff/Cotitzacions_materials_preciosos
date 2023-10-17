@@ -1,0 +1,32 @@
+<resources>
+    <string name="app_name"><Cotitza></Cotitza>Precio de materiales</string>
+    <string name="number0">0</string>
+    <string name="number1">1</string>
+    <string name="number2">2</string>
+    <string name="number3">3</string>
+    <string name="number4">4</string>
+    <string name="number5">5</string>
+    <string name="number6">6</string>
+    <string name="number7">7</string>
+    <string name="number8">8</string>
+    <string name="number9">9</string>
+    <string name="dot">,</string>
+    <string name="clear">CE</string>
+    <string name="delete">←</string>
+    <string name="dollar">Dolar</string>
+    <string name="won">Won</string>
+    <string name="ruby">Rubi</string>
+    <string name="emerald">Esmeralda</string>
+    <string name="diamond">Diamante</string>
+    <string name="sapphire">Zafíro</string>
+    <string name="equals">\u00A0=\u00A0</string>
+    <string name="is_not_number">El valor escrito no es un número</string>
+    <string name="price_not_setted">El precio no se ha guardado</string>
+    <string name="accept">Aceptar</string>
+    <string name="close">Cerrar</string>
+    <string name="what_value_material">¿Cuál es el valor de este material?</string>
+    <string name="what_value_coin">¿Cuál es el valor de esta moneda?</string>
+    <string name="material_price">Precio del material</string>
+    <string name="coin_price">Precio de la moneda</string>
+    <string name="number_too_big">El número debe ser menor a 10.000.000</string>
+</resources>
