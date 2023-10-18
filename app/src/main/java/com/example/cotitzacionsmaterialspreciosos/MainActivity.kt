@@ -1,5 +1,6 @@
 package com.example.cotitzacionsmaterialspreciosos
 
+import android.annotation.SuppressLint
 import android.graphics.Typeface
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
@@ -41,6 +42,10 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
     private var askValueCoin: String = ""
     private var materialPrice: String = ""
     private var askValueMaterial: String = ""
+
+    private var changingValue: Boolean = false
+    private var idButtonClicked: Int = -1
+    private var longClickPopup: Boolean = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -150,27 +155,36 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
         }
     }
 
+    fun updateMaterialValue(): String {
+        val value: Double = getValueMaterialSelected()
+        val resultValue: Double = inputValue * value
+        val strResult: String = String.format("%.2f", resultValue)
+
+        return strResult + " " + euroSimble
+    }
+
     fun getResultValue(): String {
         var result: String
 
         if (isMaterialSet()) {
-            val value: Double = getValueMaterialSelected()
-            val resultValue: Double = inputValue * value
-
-            result = resultValue.toString() + " " + euroSimble + " / "
+            result = updateMaterialValue()
         } else {
             result = "0"
         }
 
         if (isMaterialSet() && isCoinSet()) {
-            val newValue: Double = result.dropLast(5).toDouble()
-            val coin: Double = getValueCoinSelected()
-            val resultValue: Double = (newValue * coin)
-
-            result += resultValue.toString() + " " + getCoinSimbleSelected()
+            result += updateCoinValue(result.dropLast(5).toDouble())
         }
 
         return result.replace('.', ',')
+    }
+
+    fun updateCoinValue(newValue: Double): String {
+        val coin: Double = getValueCoinSelected()
+        val resultValue: Double = (newValue * coin)
+        val strResult: String = String.format("%.2f", resultValue)
+
+        return " / " + strResult + " " + getCoinSimbleSelected()
     }
 
     fun isCoinSet(): Boolean {
@@ -272,8 +286,22 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
         longPopUpGetValueCoin(view, view.getId())
     }
 
+    fun saveState(id: Int, isLongClick: Boolean) {
+        idButtonClicked = id
+        changingValue = true
+        longClickPopup = isLongClick
+    }
+
+    fun deleteState() {
+        idButtonClicked = -1
+        changingValue = false
+        longClickPopup = false
+    }
+
     fun popUpGetValueCoin(view: View, id: Int) {
         val edtDada = EditText(this)
+
+        saveState(id, false)
 
         MaterialAlertDialogBuilder(this)
             .setTitle(coinPrice)
@@ -287,6 +315,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
 
                 setSelectedCoinRadio(id)
                 setNotSelectedRadio(id)
+
+                deleteState()
             }
             .setPositiveButton(accept) { dialog, which ->
                 val textValue: String = edtDada.text.toString().replace(',', '.')
@@ -300,16 +330,27 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
 
                     setNotSelectedRadio(id)
                 } else {
+                    val inputRes: TextView = findViewById(R.id.tvResult)
+
                     setValueCoin(id, textValue.toDouble())
+
+                    var resText: String = updateMaterialValue()
+
+                    resText += updateCoinValue(resText.dropLast(5).toDouble())
+                    inputRes.setText(resText.replace('.', ','))
 
                     Snackbar.make(view, getCoinName(id) + strEquals + textValue, Snackbar.LENGTH_SHORT).show()
                 }
+
+                deleteState()
             }
             .show()
     }
 
     fun longPopUpGetValueCoin(view: View, id: Int) {
         val edtDada = EditText(this)
+
+        saveState(id, true)
 
         MaterialAlertDialogBuilder(this)
             .setTitle(coinPrice)
@@ -320,6 +361,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
                 setValueCoin(id, 0.0)
                 clearCoinCheck()
                 Snackbar.make(view, priceNotSet, Snackbar.LENGTH_SHORT).show()
+
+                deleteState()
             }
             .setPositiveButton(accept) { dialog, which ->
                 val textValue: String = edtDada.text.toString().replace(',', '.')
@@ -333,6 +376,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
 
                     Snackbar.make(view, getCoinName(id) + strEquals + textValue, Snackbar.LENGTH_SHORT).show()
                 }
+
+                deleteState()
             }
             .show()
     }
@@ -376,6 +421,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
     fun popUpGetMaterialPrice(view: View, id: Int) {
         val edtDada = EditText(this)
 
+        saveState(id, false)
+
         MaterialAlertDialogBuilder(this)
             .setTitle(materialPrice)
             .setCancelable(false)
@@ -388,6 +435,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
 
                 setSelectedMaterialRadio(id)
                 setNotSelectedRadio(id)
+
+                deleteState()
             }
             .setPositiveButton(accept) { dialog, which ->
                 val textValue: String = edtDada.text.toString().replace(',', '.')
@@ -401,16 +450,25 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
 
                     setNotSelectedRadio(id)
                 } else {
+                    val inputRes: TextView = findViewById(R.id.tvResult)
+                    val resText: String = updateMaterialValue()
+
                     setValueMaterial(id, textValue.toDouble())
+
+                    inputRes.setText(resText.replace('.', ','))
 
                     Snackbar.make(view, getMaterialName(id) + strEquals + textValue, Snackbar.LENGTH_SHORT).show()
                 }
+
+                deleteState()
             }
             .show()
     }
 
     fun longPopUpGetMaterialPrice(view: View, id: Int) {
         val edtDada = EditText(this)
+
+        saveState(id, true)
 
         MaterialAlertDialogBuilder(this)
             .setTitle(materialPrice)
@@ -421,6 +479,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
                 setValueMaterial(id, 0.0)
                 clearMaterialCheck()
                 Snackbar.make(view, priceNotSet, Snackbar.LENGTH_SHORT).show()
+
+                deleteState()
             }
             .setPositiveButton(accept) { dialog, which ->
                 val textValue: String = edtDada.text.toString().replace(',', '.')
@@ -434,6 +494,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
 
                     Snackbar.make(view, getMaterialName(id) + strEquals + textValue, Snackbar.LENGTH_SHORT).show()
                 }
+                deleteState()
             }
             .show()
     }
@@ -495,6 +556,7 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
     }
 
     fun setSelectedMaterialRadio(id: Int) {
+        var iResult: TextView = findViewById(R.id.tvResult)
         setSelectedRadio(id)
 
         if (id != R.id.radio_ruby) {
@@ -512,9 +574,12 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
         if (id != R.id.radio_sapphire) {
             setNotSelectedRadio(R.id.radio_sapphire)
         }
+
+        iResult.setText(getResultValue())
     }
 
     fun setSelectedCoinRadio(id: Int) {
+        var iResult: TextView = findViewById(R.id.tvResult)
         setSelectedRadio(id)
 
         if (id != R.id.radio_dollar) {
@@ -524,6 +589,8 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
         if (id != R.id.radio_won) {
             setNotSelectedRadio(R.id.radio_won)
         }
+
+        iResult.setText(getResultValue())
     }
 
     fun setNotSelectedRadio(id: Int) {
@@ -615,6 +682,11 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
         outState.putBoolean("diamondCheck", diamondCheck)
         outState.putBoolean("sapphireCheck", sappgireCheck)
 
+        if (changingValue) {
+            outState.putBoolean("longClick", longClickPopup)
+            outState.putInt("idButtonClicked", idButtonClicked)
+        }
+
         super.onSaveInstanceState(outState)
     }
 
@@ -639,6 +711,17 @@ class MainActivity : AppCompatActivity(), View.OnClickListener, View.OnLongClick
         var emeraldCheck = savedInstanceState.getBoolean("emeraldCheck")
         var diamondCheck = savedInstanceState.getBoolean("diamondCheck")
         var sapphireCheck = savedInstanceState.getBoolean("sapphireCheck")
+
+        if (savedInstanceState.containsKey("longClick")) {
+            idButtonClicked = savedInstanceState.getInt("idButtonClicked")
+            longClickPopup = savedInstanceState.getBoolean("longClick")
+
+            if (longClickPopup) {
+                onLongClick(findViewById(idButtonClicked))
+            } else {
+                onClick(findViewById(idButtonClicked))
+            }
+        }
 
         findViewById<TextView>(R.id.tvInput).setText(inputValue.toString().replace('.', ','))
         findViewById<TextView>(R.id.tvResult).setText(outputValue)
